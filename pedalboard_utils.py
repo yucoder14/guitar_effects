@@ -1,7 +1,9 @@
+from pedalboard import Plugin
 from pedalboard import Pedalboard
 from pedalboard import Chorus, Distortion, Phaser, Clipping # guitar-style effects
 from pedalboard import Compressor, Gain, Limiter # dynamic range effects
 from pedalboard import Delay, Reverb # spacial effects 
+from typing import List, Tuple
 
 import random 
 
@@ -17,7 +19,7 @@ DEFAULT_PEDAL_PROBS = [
     (Reverb(), 0.3)
 ]
 
-def get_random_board(pedal_probs:list[tuple(pedalboard.Plugin, float)]) -> Pedalboard: 
+def get_random_board(pedal_probs: List[Tuple[Plugin, float]]) -> Pedalboard: 
     """
     Given a list of plugins and dropout probability, generate a pedalboard with 
     random order. 
