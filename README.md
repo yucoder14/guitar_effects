@@ -14,9 +14,9 @@ Data pipeline
 - [x] figure out how to use pedalboard 
 - [x] figure out how to use dataset
 - [x] combine pedalboard with dataset to augment data 
+- [ ] adding noise to the data; also shifting onset of the notes, tempo
 - [ ] figure out how to discrete audio codec (DAC) to derive audio tokens 
 - [ ] incorporate DAC into the pipeline 
-- [ ] adding noise to the data  
 - [ ] make the dataset compatible with dataloader
 - [ ] figure out how to implement dataset for data with varying lengths
 
@@ -50,6 +50,7 @@ Questions
 - If I want to try training a multi-modal model, what kinds of datasets are out in the world, and how can I modify/augment it to fit my specific needs? 
 - What kinds of MIR methodologies will I need during training and/or evaluation?
 - Are some ordering of effects symmetric (different ordering produce the "same" sound)? 
+- Is training a model on single note/chord enough for the model to extract relevant patterns from a full instrumental sample? 
 
 Notes
 =====
