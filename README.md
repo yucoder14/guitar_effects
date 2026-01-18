@@ -17,6 +17,8 @@ Data pipeline
 - [ ] figure out how to discrete audio codec (DAC) to derive audio tokens 
 - [ ] incorporate DAC into the pipeline 
 - [ ] adding noise to the data  
+- [ ] make the dataset compatible with dataloader
+- [ ] figure out how to implement dataset for data with varying lengths
 
 Model
 -----
@@ -54,6 +56,8 @@ Notes
 
 As of now, I'm taking clean audio sampe and then using spotify's pedalboard to apply some random effects chain to the audio. I have not considered whether the order of the effects is "realistic", i.e., something that people will consider using. 
 - Because I'm just using python's random library, I do not have much control over the distribution of the kinds of pedalboards. 
+
+As of now, my implementation of EGFxSet is not compatible with DataLoader due to varying sizes in the lengths of the audio sample and the label that goes along with the audio.
 
 Relevant Resources
 ==================
