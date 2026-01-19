@@ -15,7 +15,7 @@ DEFAULT_PEDAL_PROBS = [
     (Compressor(), 0.3),
     (Gain(), 0.3),
     (Limiter(), 0.3),
-    (Delay(), 0.3),
+#    (Delay(), 0.3),
     (Reverb(), 0.3)
 ]
 
