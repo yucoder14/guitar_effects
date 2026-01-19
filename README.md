@@ -55,10 +55,12 @@ Questions
 Notes
 =====
 
-As of now, I'm taking clean audio sampe and then using spotify's pedalboard to apply some random effects chain to the audio. I have not considered whether the order of the effects is "realistic", i.e., something that people will consider using. 
+I'm taking clean audio sampe and then using spotify's pedalboard to apply some random effects chain to the audio. I have not considered whether the order of the effects is "realistic", i.e., something that people will consider using. 
 - Because I'm just using python's random library, I do not have much control over the distribution of the kinds of pedalboards. 
 
-As of now, my implementation of EGFxSet is not compatible with DataLoader due to varying sizes in the lengths of the audio sample and the label that goes along with the audio.
+My implementation of EGFxSet is not compatible with DataLoader due to varying sizes in the lengths of the audio sample and the label that goes along with the audio.
+
+Dependency hell. Figure out how to configure conda environment correctly so that both torch, tensorflow and discrete audio codec runs on the GPU. there's stuff about NUMA nodes, which I don't fully comprehend yet...
 
 Relevant Resources
 ==================
