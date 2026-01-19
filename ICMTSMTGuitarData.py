@@ -45,7 +45,7 @@ class ICMTSMTGuitarDataMono(Dataset):
     def __getitem__(self, index):
         meta_data = self.meta_data[index]
         waveform, sr = torchaudio.load(meta_data["path"])
-        board_string = ""
+        board_string = "clean"
 
         if self.effects_probs is not None:
             pedalboard = get_random_board(self.effects_probs)
@@ -87,7 +87,7 @@ class ICMTSMTGuitarDataPoly(Dataset):
     def __getitem__(self, index):
         meta_data = self.meta_data[index]
         waveform, sr = torchaudio.load(meta_data["path"])
-        board_string = ""
+        board_string = "clean"
 
         if self.effects_probs is not None:
             pedalboard = get_random_board(self.effects_probs)

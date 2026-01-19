@@ -8,7 +8,7 @@ from pathlib import Path
 
 class EGFxSetData(Dataset): 
     def __init__(self, effects_probs=None):
-        self.data_path = Path("/home/yuc3/guitar_effects/Clean")
+        self.data_path = Path("/home/yuc3/guitar_effects/EGFxSetResampled")
         self.wav_paths = list(self.data_path.glob("*/*.wav"))
         self.meta_data = [] 
         self.effects_probs = effects_probs
@@ -27,7 +27,7 @@ class EGFxSetData(Dataset):
     def __getitem__(self, index):
         meta_data = self.meta_data[index]
         waveform, sr = torchaudio.load(meta_data["path"])
-        board_string = ""
+        board_string = "clean"
 
         if self.effects_probs is not None:
             pedalboard = get_random_board(self.effects_probs)

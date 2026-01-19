@@ -62,8 +62,14 @@ My implementation of EGFxSet is not compatible with DataLoader due to varying si
 
 Dependency hell. Figure out how to configure conda environment correctly so that both torch, tensorflow and discrete audio codec runs on the GPU. there's stuff about NUMA nodes, which I don't fully comprehend yet...
 
+~~Now that I think of it, it may be difficult for me to run both the tf-based model by dac and torch stuff in the same pipeline because of GPU allocation problems...~~ This might not be of concern since it appears that dac uses tensorflow for tensorboard, not for their models 
+
+So the current plan for the pipeline is as follows:
+- (On CPU) Dataset (EGFxSet or IDMT) -> pedalboard -> (Now on GPU) Augmentation (Time shifts) -> descript audio codec 
+- Dataloader will load data and apply pedalboard effects using CPU
+
 Relevant Resources
 ==================
 
 EGFxSet - https://zenodo.org/records/7044411#.YzRx2XbMKUl 
-IDMT-SMT-Guitar - https://zenodo.org/records/7544110
+IDMT-SMT-Guitar - https://zenodo.org/records/7544110 

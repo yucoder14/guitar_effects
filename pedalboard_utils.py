@@ -7,6 +7,7 @@ from typing import List, Tuple
 
 import random 
 
+# using defaut parameters for now
 DEFAULT_PEDAL_PROBS = [ 
     (Chorus(), 0.3),
     (Distortion(), 0.3),
