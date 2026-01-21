@@ -14,8 +14,8 @@ Data pipeline
 - [x] figure out how to use pedalboard 
 - [x] figure out how to use dataset
 - [x] combine pedalboard with dataset to augment data 
+- [x] figure out how to discrete audio codec (DAC) to derive audio tokens 
 - [ ] adding noise to the data; also shifting onset of the notes, tempo
-- [ ] figure out how to discrete audio codec (DAC) to derive audio tokens 
 - [ ] incorporate DAC into the pipeline 
 - [ ] make the dataset compatible with dataloader
 - [ ] figure out how to implement dataset for data with varying lengths
@@ -59,6 +59,8 @@ I'm taking clean audio sampe and then using spotify's pedalboard to apply some r
 - Because I'm just using python's random library, I do not have much control over the distribution of the kinds of pedalboards. 
 
 My implementation of EGFxSet is not compatible with DataLoader due to varying sizes in the lengths of the audio sample and the label that goes along with the audio.
+
+what is stft (short-time fourier transform)? essentially, because fourier transform treats any sequence as a one continuous wave, you lose time sensitive information like onset and duration of notes played. in stft, you first divided the original signal into chunks of predetermined lengths. then you do fft on each of those chunks. then, given some time interval, you have a better sense of what frequencies were present at that specific interval. this is essentially what spectogram shows you. however, spectrograms are in Hz and ignores that human perception is not linear but logarithmic. this is where mel-spectrogram becomes useful. although i don't have all the details, it is useful in machine learning, too, because it compresses information while not losing too much information. think about it this way: the note difference between 100 Hz and 200 Hz is much greater than that between 10000 Hz and 10100 Hz.  
 
 Dependency hell. Figure out how to configure conda environment correctly so that both torch, tensorflow and discrete audio codec runs on the GPU. there's stuff about NUMA nodes, which I don't fully comprehend yet...
 
