@@ -56,20 +56,20 @@ class ICMTSMTGuitarDataMono(Dataset):
             board_string = get_board_string(pedalboard) 
 
         # crop
-        current_len = waveform.shape[-1]
-        if current_len < self.target_samples:
-            padding = self.target_samples - current_len
-            aug_waveform = pad(aug_waveform, (0, padding))
-            current_len = aug_waveform.shape[-1]
+        # current_len = waveform.shape[-1]
+        # if current_len < self.target_samples:
+        #     padding = self.target_samples - current_len
+        #     aug_waveform = pad(aug_waveform, (0, padding))
+        #     current_len = aug_waveform.shape[-1]
 
-        max_start = current_len - self.target_samples
+        # max_start = current_len - self.target_samples
         
-        if max_start <= 0:
-            i = 0
-        else:
-            i = random.randint(0, max_start)
+        # if max_start <= 0:
+        #     i = 0
+        # else:
+        #     i = random.randint(0, max_start)
             
-        return (waveform[..., i : i + self.target_samples], sr), board_string
+        return (waveform[..., 0 : self.target_samples], sr), board_string
         
     def __len__(self):
         return self.n_samples
@@ -116,20 +116,20 @@ class ICMTSMTGuitarDataPoly(Dataset):
             board_string = get_board_string(pedalboard) 
 
         # crop
-        current_len = waveform.shape[-1]
-        if current_len < self.target_samples:
-            padding = self.target_samples - current_len
-            aug_waveform = pad(aug_waveform, (0, padding))
-            current_len = aug_waveform.shape[-1]
+        # current_len = waveform.shape[-1]
+        # if current_len < self.target_samples:
+        #     padding = self.target_samples - current_len
+        #     aug_waveform = pad(aug_waveform, (0, padding))
+        #     current_len = aug_waveform.shape[-1]
 
-        max_start = current_len - self.target_samples
+        # max_start = current_len - self.target_samples
         
-        if max_start <= 0:
-            i = 0
-        else:
-            i = random.randint(0, max_start)
+        # if max_start <= 0:
+        #     i = 0
+        # else:
+        #     i = random.randint(0, max_start)
             
-        return (waveform[..., i : i + self.target_samples], sr), board_string
+        return (waveform[..., 0 : self.target_samples], sr), board_string
         
     def __len__(self):
         return self.n_samples
