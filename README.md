@@ -15,16 +15,17 @@ Data pipeline
 - [x] figure out how to use dataset
 - [x] combine pedalboard with dataset to augment data 
 - [x] figure out how to discrete audio codec (DAC) to derive audio tokens 
+- [x] make the dataset compatible with dataloader; did this by making sure that data i'm working with have same length
+- [x] shifting onsets? i am randomly sampling 2 seconds from given audio sample
 - [ ] adding noise to the data; also shifting onset of the notes, tempo
-- [ ] incorporate DAC into the pipeline 
-- [ ] make the dataset compatible with dataloader
-- [ ] figure out how to implement dataset for data with varying lengths
+- [ ] ~~figure out how to implement dataset for data with varying lengths~~ Tabling this for now...
 
 Model
 -----
 
 - [ ] decide which architecture to use (autoencoder, but what to use for encoder & decoder)
 - [ ] implement the model (doesn't look terribly hard given torch abstractions) 
+- [ ] incorporate DAC into the pipeline 
 - [ ] train the model  
 - [ ] tensorboard logging (loss and other relevant stuff, so I can see model progress) 
 

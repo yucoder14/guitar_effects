@@ -49,10 +49,10 @@ def get_board_string(pedalboard: Pedalboard) -> str:
     """
     Given a pedalboard, convert it space separated name strings
     """
-    pedal_nums = []
-    for pedal in pedalboard:
-        pedal_nums.append(str(Pedal[pedal.__class__.__name__.upper()].value))
-    return " ".join(pedal_nums) if len(pedal_nums) > 0 else "0"
+    pedal_nums = [0] * 9
+    for index, pedal in enumerate(pedalboard):
+        pedal_nums[Pedal[pedal.__class__.__name__.upper()].value] = index + 1
+    return pedal_nums
 
 def get_pedal_string(num_str):
     return " ".join(list(map(lambda num_str: Pedal(int(num_str)).name, num_str.split(" "))))
