@@ -7,6 +7,9 @@ from pedalboard import Delay, Reverb # spacial effects
 from typing import List, Tuple
 from enum import Enum
 
+from torch import tensor
+
+import numpy as np
 import random 
 
 # skipping delay for now because there's some time variant stuff going on
@@ -47,12 +50,17 @@ def get_random_board(pedal_probs: List[Tuple[Plugin, float]]) -> Pedalboard:
 
 def get_board_string(pedalboard: Pedalboard) -> str: 
     """
-    Given a pedalboard, convert it space separated name strings
+    Given a pedalboard, convert it into order vector indexed by enum values 
     """
     pedal_nums = [0] * 9
     for index, pedal in enumerate(pedalboard):
         pedal_nums[Pedal[pedal.__class__.__name__.upper()].value] = index + 1
-    return pedal_nums
+    return tensor(pedal_nums)
 
-def get_pedal_string(num_str):
-    return " ".join(list(map(lambda num_str: Pedal(int(num_str)).name, num_str.split(" "))))
+def get_pedal_string(order_vec):
+    arr = order_vec.numpy() 
+    idxs=np.where(arr!=0)
+    names = [Pedal(val).name for val in idxs[0]]
+    order = arr[idxs]
+    names = [pedal for pedal, _ in sorted(list(zip(names,order)), key=lambda tup: tup[-1])] 
+    return names if len(names) > 0 else "CLEAN"
