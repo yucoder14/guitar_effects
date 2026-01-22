@@ -39,6 +39,7 @@ Moonshots
 ---------
 
 - [ ] Vary the parameters of each effects and to effects estimations on top of order estimation
+- [ ] Is it possible to create embeddings for pedals with their parameters encoded? How would I go about doing this? 
 - [ ] Multi-modal model (people have done this)
 - [ ] zeroshot tests with with Logic's stock pedal board
 - [ ] VST or AU using the trained model? (JUCE?)
@@ -58,7 +59,9 @@ Notes
 =====
 
 I'm taking clean audio sampe and then using spotify's pedalboard to apply some random effects chain to the audio. I have not considered whether the order of the effects is "realistic", i.e., something that people will consider using. 
-- Because I'm just using python's random library, I do not have much control over the distribution of the kinds of pedalboards. 
+- Because I'm just using python's random library, I do not have much control over the distribution of the kinds of pedalboards.
+
+Think about how word embeddings are created and how might I extend them to creating embeddings for guitar pedal effects to somehow encode the type of an effect and the parameters of the effect...
 
 My implementation of EGFxSet is not compatible with DataLoader due to varying sizes in the lengths of the audio sample and the label that goes along with the audio. I circumvented this problem by cropping the tensors of set lengths.
 
