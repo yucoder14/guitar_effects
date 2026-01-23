@@ -20,7 +20,7 @@ Data pipeline (tentatively done)
 - [x] shifting onsets? i am randomly sampling 2 seconds from given audio sample
 - [x] ~~figure out how to implement dataset for data with varying lengths~~ Tabling this for now... the dataset have fixed lengths now
 - [x] ~~adding noise to the data; also shifting onset of the notes, tempo~~ also not going to worry about this for now
-- [ ] tokenize pedal information
+- [ ] tokenize pedal information; the challenge lies in encoding the parameter information somehow.
 
 Model
 -----
@@ -60,6 +60,21 @@ Questions
 
 Notes
 =====
+
+how to encode the pedal information? xml style? 
+```
+<distortion><gain>25</gain></distortion>
+``` 
+hard coded?
+```
+DISTORTION_25
+```
+OR use binning 
+```
+DISTORTION GAIN VALUE_25
+```
+- I should normalize the parameter values, which would probably involve me learning a bit about how each effects work and what are realistic ranges for each parameters
+
 
 I'm taking clean audio sampe and then using spotify's pedalboard to apply some random effects chain to the audio. I have not considered whether the order of the effects is "realistic", i.e., something that people will consider using. 
 - Because I'm just using python's random library, I do not have much control over the distribution of the kinds of pedalboards.
