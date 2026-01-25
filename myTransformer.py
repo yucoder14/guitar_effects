@@ -6,11 +6,13 @@ import math
     The Attention Layer 
 """
 class AttentionLayer(nn.Module): 
-    def __init__(self,
-                 model_dim, # d
-                 key_dim,   # d_k
-                 num_heads=1
-                ):
+    def __init__(
+        self,
+        model_dim, # d
+        key_dim,   # d_k
+        num_heads=1,
+        dropout_rate=0.1
+    ):
         super().__init__() 
 
         if num_heads < 1:
@@ -18,7 +20,8 @@ class AttentionLayer(nn.Module):
 
         if model_dim % num_heads != 0: 
             raise ValueError("model_dim is not divisible by num_heads!")
-        
+
+        self.dropout = nn.Dropout(p=dropout_rate)
         self.model_dim = model_dim
         self.key_dim = key_dim
         self.value_dim = model_dim//num_heads 
@@ -59,6 +62,7 @@ class AttentionLayer(nn.Module):
         V = V.view(batch_size, M, self.num_heads, self.value_dim).transpose(1,2)
 
         attention = Q@(K.mT) / math.sqrt(self.key_dim) # (batch_size, num_heads, N (queries), M (keys)) 
+        attention = self.dropout(attention)
         if mask is not None:
             current_mask = mask[:N, :M] # I should consider lengths of N, M carefully 
             attention += current_mask 
@@ -73,13 +77,19 @@ class AttentionLayer(nn.Module):
         return A
         
 class FeedForward(nn.Module):
-    def __init__(self, model_dim, hidden_dim):
+    def __init__(
+        self, 
+        model_dim, 
+        hidden_dim,
+        dropout_rate=0.1              
+    ):
+        self.dropout = nn.Dropout(p=dropout_rate)
         super().__init__()
         self.lin_1 = nn.Linear(in_features=model_dim, out_features=hidden_dim)
         self.lin_2 = nn.Linear(in_features=hidden_dim, out_features=model_dim)
         self.relu = nn.ReLU()
     def forward(self, X):
-        return self.lin_2(self.relu(self.lin_1(X)))
+        return self.dropout(self.lin_2(self.relu(self.lin_1(X))))
 
 class LayerNorm(nn.Module): 
     def __init__(self, model_dim, epsilon=1e-6): 
@@ -98,14 +108,18 @@ class LayerNorm(nn.Module):
         return layer_norm
 
 class TransformerBlock(nn.Module): 
-    def __init__(self, 
-                 N, 
-                 model_dim, 
-                 key_dim, 
-                 hidden_dim, 
-                 num_heads=1,
-                 cross_attention=False
-                ): 
+    def __init__(
+        self, 
+        N, 
+        model_dim, 
+        key_dim, 
+        hidden_dim, 
+        num_heads=1,
+        cross_attention=False,
+        attention_dropout_rate=0.1,
+        ffn_dropout_rate=0.1, 
+        block_dropout_rate=0.1
+    ): 
         super().__init__() 
         self.N = N
         self.model_dim = model_dim
@@ -113,9 +127,10 @@ class TransformerBlock(nn.Module):
         self.hidden_dim = hidden_dim 
         self.num_heads = num_heads
         self.cross_attention = cross_attention
-        
-        self.attention_layer = AttentionLayer(model_dim=model_dim, key_dim=key_dim, num_heads=num_heads)
-        self.ffn = FeedForward(model_dim=model_dim, hidden_dim=hidden_dim)
+
+        self.dropout = nn.Dropout(p=block_dropout_rate)
+        self.attention_layer = AttentionLayer(model_dim=model_dim, key_dim=key_dim, num_heads=num_heads, dropout_rate=attention_dropout_rate)
+        self.ffn = FeedForward(model_dim=model_dim, hidden_dim=hidden_dim, dropout_rate=ffn_dropout_rate)
         self.norm_1 = LayerNorm(model_dim=model_dim)
         self.norm_2 = LayerNorm(model_dim=model_dim)
 
@@ -137,18 +152,22 @@ class TransformerBlock(nn.Module):
         T_5 = self.ffn(T_4)
         H = T_5 + T_3 
 
-        return H
+        return self.dropout(H)
 
 class TransformerStack(nn.Module): 
-    def __init__(self, 
-                 N, 
-                 model_dim, 
-                 key_dim, 
-                 hidden_dim, 
-                 num_heads=1,
-                 cross_attention=False,
-                 num_stack=1
-                ):
+    def __init__(
+        self, 
+        N, 
+        model_dim, 
+        key_dim, 
+        hidden_dim, 
+        num_heads=1,
+        cross_attention=False,
+        num_stack=1,
+        attention_dropout_rate=0.1,
+        ffn_dropout_rate=0.1,
+        block_dropout_rate=0.1
+    ):
         super().__init__()
 
         if num_stack < 1: 
@@ -156,7 +175,17 @@ class TransformerStack(nn.Module):
 
         # using module list a
         self.blocks = nn.ModuleList([
-            TransformerBlock(N, model_dim, key_dim, hidden_dim, num_heads, cross_attention=cross_attention) 
+            TransformerBlock(
+                N, 
+                model_dim, 
+                key_dim, 
+                hidden_dim, 
+                num_heads, 
+                cross_attention=cross_attention, 
+                attention_dropout_rate=attention_dropout_rate, 
+                ffn_dropout_rate=ffn_dropout_rate, 
+                block_dropout_rate=block_dropout_rate
+            ) 
              for _ in range(num_stack)
         ])
     def forward(self, X, H_enc=None, mask=None): 
