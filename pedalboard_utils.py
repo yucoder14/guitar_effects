@@ -36,6 +36,9 @@ DEFAULT_PEDAL_PROBS = [
     (Reverb(), 0.3)
 ]
 
+def generate_tokens() -> List[str]:
+    pass
+
 def get_random_board(pedal_probs: List[Tuple[Plugin, float]]) -> Pedalboard: 
     """
     Given a list of plugins and dropout probability, generate a pedalboard with 
