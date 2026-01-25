@@ -25,16 +25,16 @@ Data pipeline (tentatively done)
 Model
 -----
 
-- [ ] decide which architecture to use (autoencoder, but what to use for encoder & decoder)
-- [ ] implement the model (doesn't look terribly hard given torch abstractions) 
-- [ ] incorporate DAC into the pipeline 
-- [ ] train the model  
+- [x] decide which architecture to use (autoencoder, but what to use for encoder & decoder) --> decided to implement transformer just for kicks
+- [ ] implement the model (doesn't look terribly hard given torch abstractions) --> a bit challenging because of broadcasting stuff
+- [ ] incorporate DAC into the pipeline --> maybe I'll just do this on the CPU
+- [ ] train the model --> getting closer!  
 - [ ] tensorboard logging (loss and other relevant stuff, so I can see model progress) 
 
 Evaluation
 ----------
 
-- [ ] how do you evaluate model fit in machine translation tasks?  
+- [ ] how do you evaluate model fit in machine translation tasks? --> i can extract information from the output sequence and actually apply the settings on spotify's pedalboard; the question is whether the output sequence would be a valid string...
 - [ ] human evaluation because humans can hear sound and make a judgment 
 
 Moonshots
