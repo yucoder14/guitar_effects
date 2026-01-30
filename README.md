@@ -20,14 +20,17 @@ Data pipeline (tentatively done)
 - [x] shifting onsets? i am randomly sampling 2 seconds from given audio sample
 - [x] ~~figure out how to implement dataset for data with varying lengths~~ Tabling this for now... the dataset have fixed lengths now
 - [x] ~~adding noise to the data; also shifting onset of the notes, tempo~~ also not going to worry about this for now
-- [ ] tokenize pedal information; the challenge lies in encoding the parameter information somehow.
+- [x] tokenize pedal information; the challenge lies in encoding the parameter information somehow.
+- [ ] normalize augmented audio; also i feel like loading the data can easily become a bottle neck at this rate...
 
 Model
 -----
 
 - [x] decide which architecture to use (autoencoder, but what to use for encoder & decoder) --> decided to implement transformer just for kicks
+- [ ] Vocab an embedding/un-embedding matrices for pedal string tokens
+- [ ] batch norm!
 - [ ] implement the model (doesn't look terribly hard given torch abstractions) --> a bit challenging because of broadcasting stuff
-- [ ] incorporate DAC into the pipeline --> maybe I'll just do this on the CPU
+- [ ] incorporate DAC into the pipeline --> maybe I'll just do this on the CPU; this adds more time during data loader
 - [ ] train the model --> getting closer!  
 - [ ] tensorboard logging (loss and other relevant stuff, so I can see model progress) 
 
@@ -40,6 +43,8 @@ Evaluation
 Moonshots
 ---------
 
+- [ ] implement KV-caching
+- [ ] try to see if i can implement the optimization that deepseek had made (https://www.youtube.com/watch?v=0VLAoVGf_74) 
 - [ ] Vary the parameters of each effects and to effects estimations on top of order estimation
 - [ ] Is it possible to create embeddings for pedals with their parameters encoded? How would I go about doing this? 
 - [ ] Multi-modal model (people have done this)
@@ -130,3 +135,4 @@ Relevant Resources
 
 - EGFxSet - https://zenodo.org/records/7044411#.YzRx2XbMKUl 
 - IDMT-SMT-Guitar - https://zenodo.org/records/7544110 
+- https://github.com/MaxHilsdorf/pedalboard_audio_augmentation/blob/main/code/audio_augmentation.py took inspiration from this code
