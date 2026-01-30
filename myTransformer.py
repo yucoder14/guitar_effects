@@ -83,11 +83,11 @@ class FeedForward(nn.Module):
         hidden_dim,
         dropout_rate=0.1              
     ):
-        self.dropout = nn.Dropout(p=dropout_rate)
         super().__init__()
         self.lin_1 = nn.Linear(in_features=model_dim, out_features=hidden_dim)
         self.lin_2 = nn.Linear(in_features=hidden_dim, out_features=model_dim)
         self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(p=dropout_rate)
     def forward(self, X):
         return self.dropout(self.lin_2(self.relu(self.lin_1(X))))
 
