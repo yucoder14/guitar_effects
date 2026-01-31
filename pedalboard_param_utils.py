@@ -9,7 +9,7 @@ pedal_dict = {
     "compressor": {
         "pedal": Compressor, 
         "params": {
-            "threshold_db": [i in range(-60,0,10)],
+            "threshold_db": [i for i in range(-60,0,10)],
             "ratio": [1.5, 2, 4, 10],
             "attack_ms": [10, 50, 70, 100],
             "release_ms": [50, 100, 150, 300, 500]
@@ -21,7 +21,7 @@ pedal_dict = {
         "params": {
             "drive_db": [12, 18, 24]
         },
-        "dropout": 0.7
+        "dropout": 0.5
     },
     "chorus": {
         "pedal": Chorus, 
@@ -32,7 +32,7 @@ pedal_dict = {
             "feedback" : [0.1, 0.2, 0.4],
             "mix" : [0.5, 0.7, 1]
         },
-        "dropout": 0.7
+        "dropout": 0.5
     },
     "phaser": {
         "pedal": Phaser, 
@@ -43,7 +43,7 @@ pedal_dict = {
             "feedback": [0, 0.4, 0.6], 
             "mix": [0.5]
         },
-        "dropout":0.7
+        "dropout":0.5
     },
     "reverb": {
         "pedal": Reverb,
@@ -54,7 +54,7 @@ pedal_dict = {
             "dry_level": [0.5, 0.7, 1],
             "width": [0.5, 0.7, 1], 
         },
-        "dropout": 0.7
+        "dropout": 0.5
     }
 }
 
@@ -80,7 +80,7 @@ def get_pedal_board(pedal_dict, shuffle=True):
         for param, bins in params.items(): 
             args[param] = random.choice(bins)
         
-        if random.random() < dropout:  
+        if random.random() > dropout:  
             board_string.append(" ".join([name + "_" + param + "_" + str(choice) for param, choice in args.items()]))
             board.append(pedal_class(**args))
     if shuffle: 
@@ -91,3 +91,19 @@ def get_pedal_board(pedal_dict, shuffle=True):
     board = Pedalboard(board)
         
     return board, list(board_string)
+    
+
+class PedalVocab(object): 
+    def __init__(self): 
+        self.token_to_num = {}
+        self.num_to_token = {}
+        tokens = tokenize_pedal_dict(pedal_dict)
+        tokens.extend(["<start>", "<sep>", "<end>"])
+        
+        for i, token in enumerate(tokens): 
+            self.token_to_num[token] = i
+            self.num_to_token[i] = token
+    def to_num(self, board_string_list): 
+        return list(map(lambda token: self.token_to_num[token], board_string_list))
+    def to_str(self, num_list): 
+        return list(map(lambda num: self.num_to_token[num], num_list))
