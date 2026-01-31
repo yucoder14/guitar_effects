@@ -91,6 +91,18 @@ def get_pedal_board(pedal_dict, shuffle=True):
     board = Pedalboard(board)
         
     return board, list(board_string)
+
+def collate_data(batch): 
+    """
+        Custom collate function to batch 
+    """
+    target_len = 32
+    audio = [item[0][0] for item in batch] 
+    
+    target = [torch.tensor(vocab.to_num(item[1]) + [-1] * (target_len - len(item[1]))) for item in batch]
+    audio_stacked = torch.stack(audio)
+    target_stacked = torch.stack(target)
+    return audio_stacked, target_stacked
     
 
 class PedalVocab(object): 
@@ -106,4 +118,4 @@ class PedalVocab(object):
     def to_num(self, board_string_list): 
         return list(map(lambda token: self.token_to_num[token], board_string_list))
     def to_str(self, num_list): 
-        return list(map(lambda num: self.num_to_token[num], num_list))
+        return list(map(lambda num: self.num_to_token[num] if num != -1 else "", num_list))

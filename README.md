@@ -20,7 +20,7 @@ Data pipeline (tentatively done)
 - [x] shifting onsets? i am randomly sampling 2 seconds from given audio sample
 - [x] ~~figure out how to implement dataset for data with varying lengths~~ Tabling this for now... the dataset have fixed lengths now
 - [x] ~~adding noise to the data; also shifting onset of the notes, tempo~~ also not going to worry about this for now
-- [x] tokenize pedal information; the challenge lies in encoding the parameter information somehow.
+- [x] tokenize pedal information; the challenge lies in encoding the parameter information somehow; create PedalVocab class
 - [ ] normalize augmented audio; also i feel like loading the data can easily become a bottle neck at this rate...
 
 Model

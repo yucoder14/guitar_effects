@@ -31,13 +31,15 @@ class EGFxSetData(Dataset):
     def __getitem__(self, index):
         meta_data = self.meta_data[index]
         waveform, sr = torchaudio.load(meta_data["path"])
-        board_string = "clean"
+        board_string = "<start> clean <end>"
 
         # apply effects 
         if self.pedal_dict is not None:
             pedalboard, pedal_string_lists = get_pedal_board(self.pedal_dict)
             waveform = from_numpy(pedalboard(waveform.numpy(), sr, reset=False))
             board_string = ("<start> " + " <sep> ".join(pedal_string_lists) + " <end>").split(" ")
+
+        waveform = waveform / waveform.abs().max()
             
         return (waveform[..., 0:self.target_samples], sr), board_string
         
