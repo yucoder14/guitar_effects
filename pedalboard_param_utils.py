@@ -5,6 +5,21 @@ from pedalboard import Reverb # spacial effects
 
 import random 
 
+class PedalVocab(object): 
+    def __init__(self): 
+        self.token_to_num = {}
+        self.num_to_token = {}
+        tokens = tokenize_pedal_dict(pedal_dict)
+        tokens.extend(["<start>", "<sep>", "<end>"])
+        
+        for i, token in enumerate(tokens): 
+            self.token_to_num[token] = i
+            self.num_to_token[i] = token
+    def to_num(self, board_string_list): 
+        return list(map(lambda token: self.token_to_num[token], board_string_list))
+    def to_str(self, num_list): 
+        return list(map(lambda num: self.num_to_token[num] if num != -1 else "", num_list))
+
 pedal_dict = {
     "compressor": {
         "pedal": Compressor, 
@@ -92,6 +107,8 @@ def get_pedal_board(pedal_dict, shuffle=True):
         
     return board, list(board_string)
 
+vocab = PedalVocab(pedal_dict)
+
 def collate_data(batch): 
     """
         Custom collate function to batch 
@@ -103,19 +120,3 @@ def collate_data(batch):
     audio_stacked = torch.stack(audio)
     target_stacked = torch.stack(target)
     return audio_stacked, target_stacked
-    
-
-class PedalVocab(object): 
-    def __init__(self): 
-        self.token_to_num = {}
-        self.num_to_token = {}
-        tokens = tokenize_pedal_dict(pedal_dict)
-        tokens.extend(["<start>", "<sep>", "<end>"])
-        
-        for i, token in enumerate(tokens): 
-            self.token_to_num[token] = i
-            self.num_to_token[i] = token
-    def to_num(self, board_string_list): 
-        return list(map(lambda token: self.token_to_num[token], board_string_list))
-    def to_str(self, num_list): 
-        return list(map(lambda num: self.num_to_token[num] if num != -1 else "", num_list))
