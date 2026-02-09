@@ -1,5 +1,6 @@
 import torch 
 import torch.nn as nn
+import dac
 import math
 
 """
@@ -205,4 +206,98 @@ class TransformerStack(nn.Module):
     def forward(self, X, H_enc=None, mask=None): 
         for block in self.blocks:
             X = block(X, H_enc, mask)
+        return X
+
+# from https://pytorch-tutorials-preview.netlify.app/beginner/transformer_tutorial.html
+# i don't completely understand positional encoding yet, but I have built the intuition that 
+# it is analogous to how binary numbers encode numbers; smaller bits flips more frequently 
+# than larger bits; this is modeled by the sinusodial waves 
+# it also takes advantage of linearity of trigonometric addition formulas, which supposedly 
+# helps the model to figure out relative positioning...
+# https://medium.com/thedeephub/positional-encoding-explained-a-deep-dive-into-transformer-pe-65cfe8cfe10b 
+class PositionalEncoding(nn.Module):
+
+    def __init__(self, model_dim: int, dropout: float = 0.1, max_len: int = 5000):
+        super().__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        position = torch.arange(max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, model_dim, 2) * (-math.log(10000.0) / model_dim))
+        pe = torch.zeros(max_len, 1, model_dim)
+        pe[:, 0, 0::2] = torch.sin(position * div_term)
+        pe[:, 0, 1::2] = torch.cos(position * div_term)
+        self.register_buffer('pe', pe)
+
+    def forward(self, X):
+        """
+        Arguments:
+            x: Tensor, shape ``[seq_len, batch_size, embedding_dim]``
+        """
+        X = X + self.pe[:X.size(0)]
+        return self.dropout(X)
+
+"""
+    Culmination of everything thus far. 
+    Using Dac as an encoder to derive the hidden representation of audio; using discrete code
+    Then, I proceed with a decoder in a canonical fashion
+"""
+class MyModel(nn.Module): 
+    def __init__(
+        self, 
+        dac, 
+        num_vocab, 
+        model_dim, 
+        key_dim, 
+        enc_out_dim, 
+        ffn_hidden_dim, 
+        num_heads=1,
+        num_stack=1, 
+        N = 32,
+        M = 128,
+        padding_idx=0
+    ):
+        super().__init__() 
+
+        self.embed = nn.Embedding(
+            num_embeddings=num_vocab + 1, 
+            embedding_dim=model_dim, 
+            padding_idx=padding_idx
+        ) 
+        
+        mask = torch.tensor(
+            [[0 if i>= j else -torch.inf for j in range(max(N,M))] for i in range(max(N,M))]
+        ) 
+        self.register_buffer('mask', mask)
+        
+        self.pos = PositionalEncoding(model_dim=model_dim)
+        
+        self.dac = dac
+        for param in self.dac.parameters():
+            param.requires_grad = False
+            
+        self.decoder = TransformerStack(
+            model_dim=model_dim, 
+            key_dim=key_dim, 
+            hidden_dim=ffn_hidden_dim, 
+            num_heads=num_heads, 
+            enc_out_dim=enc_out_dim,
+            num_stack=num_stack
+        )
+        
+        self.unembed = nn.Linear(model_dim, num_vocab + 1)
+
+    def forward(self, source, target): 
+        """
+            Returns logits of the target, which can then be passed to nn.CrossEntropyLoss
+        """
+        # encoder 
+        _, H, _, _, _ = self.dac.encode(source) 
+        H = H.transpose(1, 2) * 1.0
+        
+        # decoder
+        X = self.embed(target)
+        X = self.pos(X) 
+        X = self.decoder(X, H, self.mask) 
+        X = self.unembed(X)
+        
         return X
