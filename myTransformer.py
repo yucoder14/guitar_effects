@@ -11,7 +11,8 @@ class AttentionLayer(nn.Module):
         model_dim, # d
         key_dim,   # d_k
         num_heads=1,
-        dropout_rate=0.1
+        dropout_rate=0.1, 
+        enc_out_dim=None,
     ):
         super().__init__() 
 
@@ -26,6 +27,7 @@ class AttentionLayer(nn.Module):
         self.key_dim = key_dim
         self.value_dim = model_dim//num_heads 
         self.num_heads = num_heads
+        self.enc_out_dim = enc_out_dim
 
         # without batching considerations...
         #self.W_Q = nn.Parameter(torch.rand((num_heads, model_dim, key_dim))) 
@@ -35,10 +37,12 @@ class AttentionLayer(nn.Module):
 
         # using nn.Linear to automatically do batching  
         # concatenate heads vertically for broadcasting
-        self.W_Q = nn.Linear(in_features=model_dim, out_features=num_heads * key_dim, bias=False)
-        self.W_K = nn.Linear(in_features=model_dim, out_features=num_heads * key_dim, bias=False)
-        self.W_V = nn.Linear(in_features=model_dim, out_features=num_heads * self.value_dim, bias=False)
-        self.W_O = nn.Linear(in_features=num_heads * self.value_dim, out_features=model_dim, bias=False)
+        self.W_Q = nn.Linear(in_features=self.model_dim, out_features=self.num_heads * self.key_dim, bias=False)
+        # in features should allow for different dimensions! because H_enc may have different dimensions!
+        enc_out_dim = self.enc_out_dim if enc_out_dim is not None else self.model_dim
+        self.W_K = nn.Linear(in_features=enc_out_dim, out_features=self.num_heads * self.key_dim, bias=False)
+        self.W_V = nn.Linear(in_features=enc_out_dim, out_features=self.num_heads * self.value_dim, bias=False)
+        self.W_O = nn.Linear(in_features=self.num_heads * self.value_dim, out_features=self.model_dim, bias=False)
         
     def forward(self, X, H_enc=None, mask=None): # X has (batch_size, N, model_dim) dimensions
         K_input = H_enc if H_enc is not None else X
@@ -110,44 +114,56 @@ class LayerNorm(nn.Module):
 class TransformerBlock(nn.Module): 
     def __init__(
         self, 
-        N, 
         model_dim, 
         key_dim, 
         hidden_dim, 
         num_heads=1,
-        cross_attention=False,
+        enc_out_dim=None,
         attention_dropout_rate=0.1,
         ffn_dropout_rate=0.1, 
         block_dropout_rate=0.1
     ): 
         super().__init__() 
-        self.N = N
         self.model_dim = model_dim
         self.key_dim = key_dim 
         self.hidden_dim = hidden_dim 
         self.num_heads = num_heads
-        self.cross_attention = cross_attention
+        self.enc_out_dim = enc_out_dim
 
         self.dropout = nn.Dropout(p=block_dropout_rate)
-        self.attention_layer = AttentionLayer(model_dim=model_dim, key_dim=key_dim, num_heads=num_heads, dropout_rate=attention_dropout_rate)
+        self.attention_layer = AttentionLayer(
+            model_dim=model_dim, 
+            key_dim=key_dim, 
+            num_heads=num_heads, 
+            dropout_rate=attention_dropout_rate
+        )
         self.ffn = FeedForward(model_dim=model_dim, hidden_dim=hidden_dim, dropout_rate=ffn_dropout_rate)
         self.norm_1 = LayerNorm(model_dim=model_dim)
         self.norm_2 = LayerNorm(model_dim=model_dim)
 
-        if self.cross_attention:
-            self.cross_attention_layer = AttentionLayer(model_dim=model_dim, key_dim=key_dim, num_heads=num_heads)
+        if self.enc_out_dim is not None:
+            self.cross_attention_layer = AttentionLayer(
+                model_dim=model_dim, 
+                key_dim=key_dim, 
+                num_heads=num_heads, 
+                dropout_rate=attention_dropout_rate,
+                enc_out_dim=self.enc_out_dim
+            )
             self.norm_3 = LayerNorm(model_dim=model_dim)
 
     def forward(self, X, H_enc=None, mask=None): 
         T_1 = self.norm_1(X) 
         T_2 = self.attention_layer(T_1, mask=mask)
         T_3 = T_2 + X
-        if self.cross_attention: 
+        
+        if self.enc_out_dim is not None: 
             if H_enc is None:
                 raise ValueError("H_enc cannot be None if cross_attention is enabled!")
             T_a = self.norm_3(T_3) 
             T_b = self.cross_attention_layer(T_a, H_enc=H_enc)
-            T_3 += T_b
+            # T_3 += T_b --> this messes up autograd because it's an in-place operation that overwrites T_3 
+            T_3 = T_3 + T_b # this is fine 
+            
         T_4 = self.norm_2(T_3)
         T_5 = self.ffn(T_4)
         H = T_5 + T_3 
@@ -157,12 +173,11 @@ class TransformerBlock(nn.Module):
 class TransformerStack(nn.Module): 
     def __init__(
         self, 
-        N, 
-        model_dim, 
-        key_dim, 
+        model_dim,  # d_model
+        key_dim,    # d_key
         hidden_dim, 
         num_heads=1,
-        cross_attention=False,
+        enc_out_dim=None,
         num_stack=1,
         attention_dropout_rate=0.1,
         ffn_dropout_rate=0.1,
@@ -176,12 +191,11 @@ class TransformerStack(nn.Module):
         # using module list a
         self.blocks = nn.ModuleList([
             TransformerBlock(
-                N, 
                 model_dim, 
                 key_dim, 
                 hidden_dim, 
                 num_heads, 
-                cross_attention=cross_attention, 
+                enc_out_dim=enc_out_dim, 
                 attention_dropout_rate=attention_dropout_rate, 
                 ffn_dropout_rate=ffn_dropout_rate, 
                 block_dropout_rate=block_dropout_rate

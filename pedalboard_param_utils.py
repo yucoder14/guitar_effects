@@ -3,22 +3,9 @@ from pedalboard import Chorus, Distortion, Phaser # guitar-style effects
 from pedalboard import Compressor # dynamic range effects
 from pedalboard import Reverb # spacial effects 
 
-import random 
+import torch
 
-class PedalVocab(object): 
-    def __init__(self): 
-        self.token_to_num = {}
-        self.num_to_token = {}
-        tokens = tokenize_pedal_dict(pedal_dict)
-        tokens.extend(["<start>", "<sep>", "<end>"])
-        
-        for i, token in enumerate(tokens): 
-            self.token_to_num[token] = i
-            self.num_to_token[i] = token
-    def to_num(self, board_string_list): 
-        return list(map(lambda token: self.token_to_num[token], board_string_list))
-    def to_str(self, num_list): 
-        return list(map(lambda num: self.num_to_token[num] if num != -1 else "", num_list))
+import random 
 
 pedal_dict = {
     "compressor": {
@@ -73,6 +60,24 @@ pedal_dict = {
     }
 }
 
+class PedalVocab(object): 
+    def __init__(self): 
+        self.token_to_num = {}
+        self.num_to_token = {}
+        self.tokens = tokenize_pedal_dict(pedal_dict)
+        self.tokens.extend(["<start>", "<sep>", "<end>"])
+        self.n = len(self.tokens)
+        
+        for i, token in enumerate(self.tokens): 
+            self.token_to_num[token] = i + 1
+            self.num_to_token[i + 1] = token
+    def __len__(self):
+        return self.n
+    def to_num(self, board_string_list): 
+        return list(map(lambda token: self.token_to_num[token], board_string_list))
+    def to_str(self, num_list): 
+        return list(map(lambda num: self.num_to_token[num] if num != 0 else "", num_list))
+
 def tokenize_pedal_dict(pedal_dict): 
     tokens = []
     for pedal in pedal_dict.items(): 
@@ -107,7 +112,7 @@ def get_pedal_board(pedal_dict, shuffle=True):
         
     return board, list(board_string)
 
-vocab = PedalVocab(pedal_dict)
+vocab = PedalVocab()
 
 def collate_data(batch): 
     """
@@ -116,7 +121,7 @@ def collate_data(batch):
     target_len = 32
     audio = [item[0][0] for item in batch] 
     
-    target = [torch.tensor(vocab.to_num(item[1]) + [-1] * (target_len - len(item[1]))) for item in batch]
+    target = [torch.tensor(vocab.to_num(item[1]) + [0] * (target_len - len(item[1]))) for item in batch]
     audio_stacked = torch.stack(audio)
     target_stacked = torch.stack(target)
     return audio_stacked, target_stacked
