@@ -272,8 +272,9 @@ class MyModel(nn.Module):
         self.pos = PositionalEncoding(model_dim=model_dim)
         
         self.dac = dac
-        for param in self.dac.parameters():
-            param.requires_grad = False
+        if self.dac is not None: 
+            for param in self.dac.parameters():
+                param.requires_grad = False
             
         self.decoder = TransformerStack(
             model_dim=model_dim, 
@@ -291,8 +292,10 @@ class MyModel(nn.Module):
             Returns logits of the target, which can then be passed to nn.CrossEntropyLoss
         """
         # encoder 
-        _, H, _, _, _ = self.dac.encode(source) 
-        H = H.transpose(1, 2) * 1.0
+        H = None
+        if self.dac is not None:
+            _, H, _, _, _ = self.dac.encode(source) 
+            H = H.transpose(1, 2) * 1.0
         
         # decoder
         X = self.embed(target)

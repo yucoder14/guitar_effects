@@ -121,7 +121,7 @@ def collate_data(batch):
     target_len = 32
     audio = [item[0][0] for item in batch] 
     
-    target = [torch.tensor(vocab.to_num(item[1]) + [0] * (target_len - len(item[1]))) for item in batch]
+    target = [torch.tensor(vocab.to_num(item[1]) + vocab.to_num(["<end>"]) * (target_len - len(item[1]))) for item in batch]
     audio_stacked = torch.stack(audio)
     target_stacked = torch.stack(target)
     return audio_stacked, target_stacked
